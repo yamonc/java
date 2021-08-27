@@ -91,6 +91,63 @@ a+b会自动提升为int, 因此在给c赋值的时候要强制转换成byte.
 1. return；：直接使用return结束方法执行，用于没有返回值函数的方法
 2. return value：return一个特定的值，用于返回有返回值函数的方法。
 
+### 1.4 final、static、this、super关键字总结
+
+#### final关键字
+
+final 关键字，意思是最终的、不可修改的，最见不得变化 ，用来修饰类、方法和变量，具有以下特点：
+
+1. final 修饰的类不能被继承，final 类中的所有成员方法都会被隐式的指定为 final 方法；
+2. final 修饰的方法不能被重写；
+3. final 修饰的变量是常量，如果是基本数据类型的变量，则其数值一旦在初始化之后便不能更改；如果是引用类型的变量，则在对其初始化之后便不能让其指向另一个对象。
+
+说明：使用 final 方法的原因有两个。第一个原因是把方法锁定，以防任何继承类修改它的含义；第二个原因是效率。在早期的 Java 实现版本中，会将 final 方法转为内嵌调用。但是如果方法过于庞大，可能看不到内嵌调用带来的任何性能提升（现在的 Java 版本已经不需要使用 final 方法进行这些优化了）。类中所有的 private 方法都隐式地指定为 final。
+
+#### static关键字
+
+static关键字主要的四个使用场景
+
+1. 修饰成员变量和方法：被static修饰的成员属于类，不属于单个这个类的某个对象，被类中所有的对象共享，建议通过类名调用。被static声明的成员变量属于静态变量成员，静态变量存放在Java内存区域的方法区。调用格式：`类名.静态变量名` ``类名.静态方法名()`
+
+   > 方法区和Java堆一样，是各个线程共享的内存区域，它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。虽然Java虚拟机规范把方法区描述成为堆的一个逻辑部分，但是它还有一个别名叫做Non-Heap，目的是跟Java堆区分开来。
+
+2. 静态代码块：静态代码块定义在类中方法外，静态代码块在非静态代码块之前执行。执行顺序静态代码块->非静态代码块->构造方法。该类不管创建多少对象，静态代码块只执行一次。
+
+   > 一个类中的静态代码块可以有多个，位置可以随便放，它不在任何的方法体内，JVM 加载类时会执行这些静态的代码块，如果静态代码块有多个，JVM 将按照它们在类中出现的先后顺序依次执行它们，每个代码块只会被执行一次。
+
+3. 静态内部类（static修饰的话只能修饰内部类）：静态内部类和非静态内部类之间最大的一个区别在于：非静态内部类在编译完成之后会隐含地保存一个引用，该引用是指向创建它的外围类，但是静态内部类却没有。没有这个引用就意味着：1. 它的创建不需要依赖外围类的创建2. 他不能使用任何外围类的非static成员变量和方法。
+
+   > 查看静态内部类创建[单例模式]()
+
+4. 静态导包（用来导入类中的静态资源，1.5之后的新特性）：格式`import static`,这两个关键字连用可以导入指定类中的静态变量，并且不用再在类中调用类中静态成员，可以直接使用类中的静态成员变量和成员方法。
+
+##### 引申`static{}`静态代码块与`{}`非静态代码块(构造代码块)
+
+相同点： 都是在 JVM 加载类时且在构造方法执行之前执行，在类中都可以定义多个，定义多个时按定义的顺序执行，一般在代码块中对一些 static 变量进行赋值。
+
+不同点： 静态代码块在非静态代码块之前执行(静态代码块 -> 非静态代码块 -> 构造方法)。静态代码块只在第一次 new 执行一次，之后不再执行，而非静态代码块在每 new 一次就执行一次。 非静态代码块可在普通方法中定义(不过作用不大)；而静态代码块不行。
+
+##### 非静态代码块和构造函数的区别：
+
+非静态代码块与构造函数的区别是： 非静态代码块是给所有对象进行统一初始化，而构造函数是给对应的对象初始化，因为构造函数是可以多个的，运行哪个构造函数就会建立什么样的对象，但无论建立哪个对象，都会先执行相同的构造代码块。也就是说，构造代码块中定义的是不同对象共性的初始化内容。
+
+#### this关键字
+
+this 关键字用于引用类的当前实例。此关键字是可选的，这意味着如果上面的示例在不使用此关键字的情况下表现相同。 但是，使用此关键字可能会使代码更易读或易懂。
+
+#### super关键字
+
+super 关键字用于从子类访问父类的变量和方法。
+
+#### this和super关键字注意的问题
+
+- 在构造器中使用 `super()` 调用父类中的其他构造方法时，该语句必须处于构造器的首行，否则编译器会报错。另外，this 调用本类中的其他构造方法时，也要放在首行。
+- this、super 不能用在 static 方法中。
+
+**简单解释一下：**
+
+被 static 修饰的成员属于类，不属于单个这个类的某个对象，被类中所有对象共享。而 this 代表对本类对象的引用，指向本类对象；而 super 代表对父类对象的引用，指向父类对象；所以， **this 和 super 是属于对象范畴的东西，而静态方法是属于类范畴的东西**。
+
 ### 1.4 Java泛型
 
 #### 1.4.1 什么是泛型？
@@ -238,6 +295,37 @@ public class DebugInvocationHandler implements InvocationHandler {
 
 另外，注解的实现也用到了反射。
 
+#### 1.6.4 获取Class对象的四种方式
+
+我们可以依靠Class对象来获取类的方法变量。
+
+1. 知道具体类的情况下使用：
+
+   ```java
+   Class alunbarClass = TargetObject.class;
+   ```
+
+2. 通过 `Class.forName()`传入类的路径获取：
+
+   ```java
+   Class alunbarClass1 = Class.forName("cn.javaguide.TargetObject");
+   ```
+
+3. 通过对象实例`instance.getClass()`获取：
+
+   ```java
+   TargetObject o = new TargetObject();
+   Class alunbarClass2 = o.getClass();
+   ```
+
+4. 通过类加载器`xxxClassLoader.loadClass()`传入类路径获取:
+
+   ```java
+   Class clazz = ClassLoader.loadClass("cn.javaguide.TargetObject");
+   ```
+
+   
+
 ### 1.7 异常
 
 #### Java异常类层次结构图
@@ -298,6 +386,29 @@ Java Io 流共涉及 40 多个类，这些类看上去很杂乱，但实际上�
 按操作对象分类结构图：
 
 ![IO-操作对象分类](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-6/IO-%E6%93%8D%E4%BD%9C%E5%AF%B9%E8%B1%A1%E5%88%86%E7%B1%BB.png)
+
+**强烈建议**查看[这篇文章](https://snailclimb.gitee.io/javaguide/#/docs/java/basis/IO%E6%A8%A1%E5%9E%8B)
+
+
+
+### 1.9 Java集合
+
+ArrayList可以被序列化吗？为什么ArrayList中的存储数据的数组（elementData）使用transient修饰？
+
+首先ArrayList可以被序列化，因为实现了Serializable接口。
+
+```java
+public class ArrayList<E> extends AbstractList<E>
+        implements List<E>, RandomAccess, Cloneable, java.io.Serializable{
+
+  }
+```
+
+其次，elementData使用transient修饰的目的是为了节省空间。解释如下：
+
+elementData数组相当于容器，当容器不足时就会再扩充容量，但是容器的容量往往都是大于或者等于ArrayList所存元素的个数。
+比如，现在实际有了8个元素，那么elementData数组的容量可能是8x1.5=12，如果直接序列化elementData数组，那么就会浪费4个元素的空间，特别是当元素个数非常多时，这种浪费是非常不合算的。所以ArrayList的设计者将elementData设计为transient，然后在writeObject方法中手动将其序列化，并且只序列化了实际存储的那些元素，而不是整个数组。
+[参考博客](https://blog.csdn.net/qingmengwuhen1/article/details/53142382)
 
 
 
@@ -500,6 +611,30 @@ MyISAM引擎使用B+Tree作为索引结构，叶节点的**data域存放的是�
 ## 必会代码
 
 ### 单例模式TODO
+
+#### 静态内部类创建单例模式
+
+```java
+public class Singleton {
+
+    //声明为 private 避免调用默认构造方法创建对象
+    private Singleton() {
+    }
+
+   // 声明为 private 表明静态内部该类只能在该 Singleton 类中被访问
+    private static class SingletonHolder {
+        private static final Singleton INSTANCE = new Singleton();
+    }
+
+    public static Singleton getUniqueInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+}
+```
+
+当 Singleton 类加载时，静态内部类 SingletonHolder 没有被加载进内存。只有当调用 `getUniqueInstance()`方法从而触发 `SingletonHolder.INSTANCE` 时 SingletonHolder 才会被加载，此时初始化 INSTANCE 实例，并且 JVM 能确保 INSTANCE 只被实例化一次。
+
+这种方式不仅具有延迟初始化的好处，而且由 JVM 提供了对线程安全的支持。
 
 ### 死锁代码TODO
 
